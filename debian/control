@@ -1,15 +1,66 @@
-Source: template-repository
-Section: unknown
+Source: libspf2
 Priority: optional
-Maintainer: Tsic404 <liuheng@deepin.org>
-Build-Depends: debhelper (>= 11)
-Standards-Version: 4.1.3
-Homepage: https://github.com/deepin-community/template-repository
-#Vcs-Browser: https://salsa.debian.org/debian/deepin-community-template-repository
-#Vcs-Git: https://salsa.debian.org/debian/deepin-community-template-repository.git
+Section: libs
+Maintainer: Magnus Holmgren <holmgren@debian.org>
+Build-Depends: dpkg-dev (>= 1.15.7), debhelper-compat (= 12),
+ perl, libstring-escape-perl
+Standards-Version: 3.9.7
+Vcs-Svn: svn://svn.kibibyte.se/libspf2/trunk
+Vcs-Browser: http://svn.kibibyte.se/libspf2
+Homepage: http://www.libspf2.org/
 
-Package: template-repository
+Package: libspf2-2
+Section: libs
+Architecture: any
+Conflicts: libspf2-0
+Replaces: libspf2-0
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: library for validating mail senders with SPF
+ libspf2 implements the Sender Policy Framework, a part of the SPF/SRS
+ protocol pair. libspf2 is a library which allows email systems such
+ as Sendmail, Postfix, Exim, Zmailer and MS Exchange to check SPF
+ records and make sure that the email is authorized by the domain name
+ that it is coming from. This prevents email forgery, commonly used by
+ spammers, scammers and email viruses/worms.
+
+Package: libspf2-dev
+Section: libdevel
+Architecture: any
+Depends: libspf2-2 (= ${binary:Version}), ${misc:Depends}
+Description: Header and development libraries for libspf2
+ libspf2 implements the Sender Policy Framework, a part of the SPF/SRS
+ protocol pair. libspf2 is a library which allows email systems such
+ as Sendmail, Postfix, Exim, Zmailer and MS Exchange to check SPF
+ records and make sure that the email is authorized by the domain name
+ that it is coming from. This prevents email forgery, commonly used by
+ spammers, scammers and email viruses/worms.
+
+Package: spfquery
+Section: mail
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Conflicts: libmail-spf-query-perl (<< 1:1.999.1-3)
+Description: query SPF (Sender Policy Framework) to validate mail senders
+ The Sender Policy Framework (SPF) is one part of the SPF/SRS protocol
+ pair. SPF allows email systems such as Sendmail, Postfix, Exim,
+ Zmailer and MS Exchange to check SPF records and make sure that the
+ email is authorized by the domain name that it is coming from. This
+ prevents email forgery, commonly used by spammers, scammers and email
+ viruses/worms.
+ .
+ This package contains simple utilities that use libspf2 to test and 
+ query SPF records.
+
+Package: libmail-spf-xs-perl
+Section: perl
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, libstring-escape-perl
+Description: library for validating mail senders with SPF - Perl bindings
+ libspf2 implements the Sender Policy Framework, a part of the SPF/SRS
+ protocol pair. libspf2 is a library which allows email systems such
+ as Sendmail, Postfix, Exim, Zmailer and MS Exchange to check SPF
+ records and make sure that the email is authorized by the domain name
+ that it is coming from. This prevents email forgery, commonly used by
+ spammers, scammers and email viruses/worms.
+ .
+ This package provides an XS module for using libspf from Perl programs.

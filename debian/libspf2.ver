@@ -1,0 +1,16 @@
+{
+global:
+	SPF_*;
+	main;
+	__libc_csu_*;
+	_init;
+	_fini;
+	_IO_stdin_used;
+	_DYNAMIC_LINKING;
+	__RLD_MAP;
+local:
+	SPF_recalloc;
+	SPF_sanitize;
+	SPF_print_sizeof;
+	*;
+};

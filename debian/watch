@@ -1,0 +1,3 @@
+version=3
+
+opts=dversionmangle=s/\.dfsg$// http://www.libspf2.org/download.html spf/libspf2-(.+)\.tar\.gz

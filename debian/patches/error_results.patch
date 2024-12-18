@@ -1,0 +1,86 @@
+From: Sebastian Schweizer <sebastian@schweizer.tel>
+Subject: Return header info also in case of missing or multiple SPF records.
+Bug: https://bugs.debian.org/806313
+Forwarded: https://github.com/shevek/libspf2/pull/9
+
+diff --git a/src/libspf2/spf_interpret.c b/src/libspf2/spf_interpret.c
+index a35b58c..5f15df4 100644
+--- a/src/libspf2/spf_interpret.c
++++ b/src/libspf2/spf_interpret.c
+@@ -104,7 +104,6 @@ SPF_i_set_smtp_comment(SPF_response_t *spf_response)
+ 		case SPF_RESULT_FAIL:
+ 		case SPF_RESULT_SOFTFAIL:
+ 		case SPF_RESULT_NEUTRAL:
+-		case SPF_RESULT_NONE:
+ 
+ 			err = SPF_i_set_explanation(spf_response);
+ 			if (err != SPF_E_SUCCESS)
+@@ -126,6 +125,7 @@ SPF_i_set_smtp_comment(SPF_response_t *spf_response)
+ 		case SPF_RESULT_PASS:
+ 		case SPF_RESULT_TEMPERROR:
+ 		case SPF_RESULT_PERMERROR:
++		case SPF_RESULT_NONE:
+ 		default:
+ 			break;
+ 	}
+@@ -380,7 +380,7 @@ SPF_i_set_received_spf(SPF_response_t *spf_response)
+  * This must be called with EITHER
+  * spf_response->spf_record_exp != NULL
+  *   OR
+- * result in { SPF_RESULT_PASS SPF_RESULT_INVALID
++ * result in { SPF_RESULT_NONE SPF_RESULT_PASS SPF_RESULT_INVALID
+  *		SPF_RESULT_TEMPERROR SPF_RESULT_PERMERROR }
+  * or the library will abort when it tries to generate an explanation.
+  */
+diff --git a/src/libspf2/spf_server.c b/src/libspf2/spf_server.c
+index d648b4e..66beb69 100644
+--- a/src/libspf2/spf_server.c
++++ b/src/libspf2/spf_server.c
+@@ -361,8 +361,9 @@ retry:
+ 			}
+ 			spf_response->result = SPF_RESULT_NONE;
+ 			spf_response->reason = SPF_REASON_FAILURE;
+-			return SPF_response_add_error(spf_response, SPF_E_NOT_SPF,
+-					"Host '%s' not found.", domain);
++			return SPF_i_done(spf_response, SPF_RESULT_NONE, SPF_REASON_FAILURE,
++					SPF_response_add_error(spf_response, SPF_E_NOT_SPF,
++						"Host '%s' not found.", domain));
+ 			// break;
+ 
+ 		case NO_DATA:
+@@ -375,8 +376,9 @@ retry:
+ 			}
+ 			spf_response->result = SPF_RESULT_NONE;
+ 			spf_response->reason = SPF_REASON_FAILURE;
+-			return SPF_response_add_error(spf_response, SPF_E_NOT_SPF,
+-					"No DNS data for '%s'.", domain);
++			return SPF_i_done(spf_response, SPF_RESULT_NONE, SPF_REASON_FAILURE,
++					SPF_response_add_error(spf_response, SPF_E_NOT_SPF,
++						"No DNS data for '%s'.", domain));
+ 			// break;
+ 
+ 		case TRY_AGAIN:
+@@ -453,17 +455,18 @@ retry:
+ 		}
+ 		spf_response->result = SPF_RESULT_NONE;
+ 		spf_response->reason = SPF_REASON_FAILURE;
+-		return SPF_response_add_error(spf_response, SPF_E_NOT_SPF,
+-				"No SPF records for '%s'", domain);
++		return SPF_i_done(spf_response, SPF_RESULT_NONE, SPF_REASON_FAILURE,
++				SPF_response_add_error(spf_response, SPF_E_NOT_SPF,
++					"No SPF records for '%s'", domain));
+ 	}
+ 	if (num_found > 1) {
+ 		SPF_dns_rr_free(rr_txt);
+ 		// rfc4408 requires permerror here.
+-		/* XXX This could be refactored with SPF_i_done. */
+ 		spf_response->result = SPF_RESULT_PERMERROR;
+ 		spf_response->reason = SPF_REASON_FAILURE;
+-		return SPF_response_add_error(spf_response, SPF_E_MULTIPLE_RECORDS,
+-				"Multiple SPF records for '%s'", domain);
++		return SPF_i_done(spf_response, SPF_RESULT_PERMERROR, SPF_REASON_FAILURE,
++				SPF_response_add_error(spf_response, SPF_E_MULTIPLE_RECORDS,
++					"Multiple SPF records for '%s'", domain));
+ 	}
+ 
+ 	/* try to compile the SPF record */

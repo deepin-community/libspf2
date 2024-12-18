@@ -1,0 +1,19 @@
+Description: Don't use unnecessary libreplace
+ libreplace isn't providing anything of utility here, it's unconditional and
+ causing build failures on some architectures.
+Author: Steve Langasek <steve.langasek@ubuntu.com>
+Last-Updated: 2022-02-24
+Forwarded: no
+
+Index: libspf2-1.2.10/src/libspf2/Makefile.am
+===================================================================
+--- libspf2-1.2.10.orig/src/libspf2/Makefile.am
++++ libspf2-1.2.10/src/libspf2/Makefile.am
+@@ -34,7 +34,6 @@
+ 	spf_utils.c \
+ 	spf_win32.c
+ 
+-libspf2_la_LIBADD	= $(top_builddir)/src/libreplace/libreplace.la
+ 
+ 
+ 

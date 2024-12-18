@@ -1,0 +1,197 @@
+.\"     Title: SPFQUERY
+.\"    Author: Magnus Holmgren <holmgren@debian.org>
+.\"      Date: 2007-09-06
+.\"    Manual: libspf2 manuals for Debian
+.\"    Source: libspf2 1.2.5
+.\"
+.TH "SPFQUERY" "1" "2007-09-06" "libspf2 1.2.5" "libspf2 manuals for Debian"
+.\" disable hyphenation
+.nh
+.SH NAME
+spfquery, spfquery.libspf2 \- checks if an IP address is an SPF-authorized SMTP sender for a domain.
+.SH SYNOPSIS
+.ad l
+.HP 9
+.B spfquery
+.RB { \-i | \-\-ip }
+.I ip\-address
+.RB { -s | \-\-sender }
+.RI [ local-part \fB@\fP] domain
+.RB [{ \-h | \-\-helo } 
+.IR domain-name ]
+.RB [ \-\-rcpt\-to
+.IR email-address(es) ]
+.RI [ CONTROL-OPTIONS ]
+.HP 9
+.B spfquery
+.RB { \-f | \-\-file }
+.IR datafile " [" CONTROL-OPTIONS ] 
+.HP 9
+.B spfquery
+.RB { \-\-help | \-v | \-\-version }
+.ad b
+.SH DESCRIPTION
+This manual page documents briefly the
+\fBspfquery\fR
+command. It was written for the
+Debian\*[R] distribution because the original program does not have a manual page.
+.PP
+\fBspfquery\fR performs Sender Policy Framework (SPF) authorization
+checks based on the command-line arguments or data given in a file or
+on standard input. For information on SPF see http://www.openspf.org.
+.
+.SH OPTIONS
+Options are divided into two groups: Data options, which must be
+given, though just enough of them to specify a query; and control
+options, which are optional and control the local policy, behaviour
+and output format of spfquery.
+.PP
+This programs follows the GNU \fBgetopt_long_only\fR(3) command line
+syntax: Long options can be given with one or two dashes and can be
+abbreviated to a prefix long enough to be non-ambiguous. If an option
+starting with a single dash doesn't match a long option, it is taken
+as a short option with a following parameter, if applicable. An equals
+sign between the option name and the parameter is optional for both
+short and long options.
+.SS Data options
+The
+\fB\-\-file\fR option conflicts with all the other data options. The
+\fB\-\-helo\fR and \fB\-\-rcpt\-to\fR are optional.
+.TP
+\fB\-f\fR, \fB\-\-file\fR \fIfilename\fR
+Read SPF data from \fIfilename\fR. Specify \(lq-\(rq to read from standard input.
+.sp
+The file should consist of one line per query, each query line consisting of the IP address, sender adress, and optional HELO string, separated by spaces.
+.sp
+\fBNote\fP
+Local parts containing spaces are currently not supported.
+.TP
+\fB\-i\fP, \fB\-\-ip\fP \fIip-address\fP
+Specify the IP address of the remote host that is delivering the mail.
+.TP
+\fB\-s\fP, \fB\-\-sender\fP [\fIlocal-part\fP\fB@\fP]\fIdomain\fP
+Specify the email address that was used as the envelope sender. If no
+username (local part) is given, \(lqpostmaster\(rq will be assumed.
+.TP
+\fB\-h\fP, \fB\-\-helo\fP \fIdomain-name\fP
+Specify that \fIdomain-name\fP was provided in the SMTP HELO (or EHLO) command.
+.TP
+\fB\-r\fP, \fB\-\-rcpt-to\fP \fIrcpt-address\fP[,\fIrcpt-address\fP,...]
+Specify the recipients as comma-separated list. Any secondary mail exchangers of all
+recipient domains are automatically authorized.
+.
+.SS Control options
+.TP
+\fB\-d\fP, \fB\-\-debug\fP[\fB=\fP\fIlevel\fP]
+Turn on debugging output.
+.TP
+\fB\-l\fP, \fB\-\-local\fP \fIspf\-terms\fP
+Test against \fIspf\-terms\fR before the final (implicit or explicit)
+\(lqall\(rq in an SPF record. This can be used to implement a local policy for whitelisting.
+.TP
+\fB\-t, \fB\-\-trusted\fR [\fB1\fR]
+Check the sender domain with trusted\-forwarder.org.
+\fBThis is a non\-standard feature.\fR
+.TP
+\fB\-t\fP \fB0\fP, \fB\-\-trusted\fR \fB0\fP
+Do not check the sender domain with trusted\-forwarder.org. This is the default.
+.TP
+\fB\-g\fP, \fB\-\-guess\fP \fIspf-mechanisms\fP
+Test the sender domain against \fIspf\-mechanisms\fP if the domain has no SPF record.
+.TP
+\fB\-e\fP, \fB\-\-default\-explanation\fP \fIstring\fP
+Default explanation string to use if the SPF record does not specify an expla\%nation string itself.
+.TP
+\fB\-m\fP, \fB\-\-max\-lookup\fP \fInumber\fP
+Maximum number of DNS lookups to allow.
+.TP
+\fB\-c\fP, \fB\-\-sanitize\fP [\fB0\fP|\fB1\fP]
+Do [not] sanitize the output by condensing conse\%cutive white\%space
+into a single space and replacing non-printable characters with
+question marks. Enabled by default.
+.TP
+\fB\-n\fP, \fB\-\-name\fP \fIhostname\fP
+Use
+\fIhostname\fP
+as the name of the local system instead of
+\(lqspfquery\(rq
+(the name is used in the output).
+.TP
+\fB\-k\fP, \fB\-\-keep\-comments\fP
+Print comments found when reading from a file.
+.TP
+\fB\-a\fP, \fB\-\-override\fP \fI...\fP
+.TP
+\fB\-z\fP, \fB\-\-fallback\fP \fI...\fP
+Provide override and fallback SPF records for certain domains.
+\fBNot implemented yet.\fP
+\fBspfquery\fP
+would act as if the speci\%fied records were present before and after any existing record, respectively, of those domains.
+.TP
+\fB\-\-help\fP
+Show summary of options.
+.TP
+\fB\-v\fP, \fB\-\-version\fP
+Show version of program.
+.SH DIAGNOSTICS
+The output ordinarily consists of four lines:
+.IP 1. 4
+the \fIresult code\fP;
+.IP 2. 4
+the \fIexplanation\fP, suitable for use in an SMTP response message, empty
+except when a rejection (permanent or temporary) makes sense;
+.IP 3. 4
+the header comment on its own;
+.IP 4. 4
+the Received\-SPF header field as defined in RFC 4408 section 7,
+incorporating the header comment.
+.PP
+If errors (including no SPF record found!) occur during processing, 
+one or more error blocks will be prepended.
+These start with \(lqStartError\(lq and end with \(lqEndError\(lq.
+.PP
+The result codes and their corresponding exit codes are as follows:
+.TP
+.B 1 \(en neutral
+The sender domain explicitly makes no assertion about the \fIip-address\fP.
+This result must be interpreted exactly as if no SPF record at all existed.
+.TP
+.B 2 \(en pass
+The \fIip-address\fP is authorized to send mail for the sender domain.
+.TP
+.B 3 \(en fail
+The \fIip-address\fP is \fBunauthorized\fP to send mail for the sender domain.
+.TP
+.B 4 \(en softfail
+The \fIip-address\fP is not authorized to send mail for the sender domain, but
+the sender domain cannot or does not wish to make a strong assertion that no such mail can
+ever come from it.
+.TP
+.B 5 \(en none
+No SPF record was found.
+.TP
+.BR "6 \(en error" " (temporary)"
+A transient error occurred (e.g. failure to reach a DNS server), preventing a
+result from being reached.
+.TP
+.BR "7 \(en unknown" " (permanent error)"
+One or more SPF records could not be interpreted.
+.SH EXAMPLES
+.nf
+spfquery \-ip=11.22.33.44 \-sender=user@aol.com \-helo=spammer.tld
+spfquery \-f test_data
+echo "127.0.0.1 myname@mydomain.com helohost.com" | spfquery \-f \-
+.fi
+.SH SEE ALSO
+\fBspftest\fR(1), \fBspfd\fR(8)
+.SH AUTHOR
+\fBspfquery\fP was written by Wayne Schlitt.
+.PP
+This manual page was written by Magnus Holmgren for the Debian\*[R]
+system (but may be used by others). Heavily inspired by the spfquery manpage of 
+libmail\-spf\-query\-perl (\fBspfquery.mail\-spf\-query\-perl\fR(1)) by Julian Mehnle.
+Also based on the command\-line help of spfquery.
+.SH COPYRIGHT
+Copyright \(co 2007 Magnus Holmgren. Permission is granted to copy,
+distribute and/or modify this document under the terms of the two-clause BSD
+License. See /usr/share/doc/spfquery/copyright.

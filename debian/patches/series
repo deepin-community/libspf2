@@ -1,0 +1,9 @@
+spf_dns-include-std-headers.patch
+abolish-spf-rrtype.patch
+gcc5-variadicmacros.patch
+error_results.patch
+spf_compile.c-Correct-size-of-ds_avail.patch
+Sanity-check-for-sprintf.patch
+Fixed-reverse-macro-modifier.patch
+no-libreplace.patch
+spf_compile.c-more-correct-size-of-ds_avail.patch

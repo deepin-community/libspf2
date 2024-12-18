@@ -1,4 +1,88 @@
 #!/usr/bin/make -f
 
-%:
-	dh $@
+SOURCE_PACKAGE = libspf2
+LIB_PACKAGE = libspf2-2
+
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+
+ifeq ($(DEB_BUILD_GNU_TYPE), $(DEB_HOST_GNU_TYPE))
+  buildflags := --build=$(DEB_BUILD_GNU_TYPE)
+else
+  buildflags := --build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE)
+endif
+
+CFLAGS := $(shell dpkg-buildflags --get CFLAGS)
+CPPFLAGS := $(shell dpkg-buildflags --get CPPFLAGS)
+LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS)
+perlld := $(shell perl -MConfig -e 'print $$Config{ld}')
+
+DEB_LDFLAGS_MAINT_APPEND = -Wl,--version-script=$(CURDIR)/debian/libspf2.ver
+buildflags += $(shell DEB_LDFLAGS_MAINT_APPEND="$(DEB_LDFLAGS_MAINT_APPEND)" \
+ dpkg-buildflags --export=configure)
+
+config.status: configure
+	dh_testdir
+	# Add here commands to configure the package.
+	dh_autoreconf
+	./configure --prefix=/usr $(buildflags)
+
+build: build-arch
+build-indep:
+build-arch: build-arch-stamp
+build-arch-stamp: config.status
+	dh_testdir
+
+	$(MAKE) 
+	cd perl && perl Makefile.PL INSTALLDIRS=vendor \
+	  OPTIMIZE="$(CPPFLAGS) $(CFLAGS)" LD="$(perlld) $(CFLAGS) $(LDFLAGS)"
+	$(MAKE) -C perl LD_RUN_PATH=
+
+	touch "$@"
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-arch-stamp
+
+	[ ! -f Makefile ] || $(MAKE) distclean
+	[ ! -f perl/Makefile ] || $(MAKE) -C perl realclean
+
+	dh_autoreconf_clean
+	dh_clean
+
+install: build-arch
+	dh_testdir
+	dh_testroot
+	dh_prep
+
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+	$(MAKE) -C perl install DESTDIR=$(CURDIR)/debian/tmp
+
+binary-arch: install
+	dh_testdir
+	dh_testroot
+	dh_install -a
+#	Rename the `spfquery` tool for the alternatives system:
+	mv debian/spfquery/usr/bin/spfquery debian/spfquery/usr/bin/spfquery.$(SOURCE_PACKAGE)
+	mv debian/spfquery/usr/sbin/spfd debian/spfquery/usr/sbin/spfd.$(SOURCE_PACKAGE)
+	dh_installdocs -a --link-doc=$(LIB_PACKAGE)
+	dh_installchangelogs -a
+	dh_installman -a
+	dh_strip -a --dbgsym-migration="$(LIB_PACKAGE)-dbg (<< 1.2.10-8)"
+	dh_perl -a
+	dh_compress -a
+	dh_fixperms -a
+	dh_makeshlibs -V '$(LIB_PACKAGE) (>= 1.2.8~)'
+	dh_installdeb -a
+	dh_shlibdeps -a
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb -a
+
+binary: binary-arch
+
+get-orig-source:
+	wget http://www.libspf2.org/spf/libspf2-1.2.10.tar.gz
+
+.PHONY: build build-indep build-arch clean clean-patched binary-indep binary-arch binary install get-orig-source

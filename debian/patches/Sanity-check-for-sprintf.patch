@@ -1,0 +1,28 @@
+From: Nathaniel <me@nathanielbennett.com>
+Date: Tue, 8 Jun 2021 06:43:29 -0400
+Subject: Sanity check for sprintf
+Origin: https://github.com/shevek/libspf2/commit/28faf4624a6a371b11afdb9820078d3b0ee3803d
+
+---
+ src/libspf2/spf_expand.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/src/libspf2/spf_expand.c b/src/libspf2/spf_expand.c
+index e7f5a26f3e1b..25689da11e84 100644
+--- a/src/libspf2/spf_expand.c
++++ b/src/libspf2/spf_expand.c
+@@ -398,10 +398,7 @@ top:
+ 						break;
+ 
+ 					default:
+-						/* No point doing snprintf with a const '4'
+-						 * because we know we're going to get 4
+-						 * characters anyway. */
+-						sprintf( p_write, "%%%02x", *p_read );
++						snprintf( p_write, 4, "%%%02x", (unsigned char) *p_read );
+ 						p_write += 3;
+ 						p_read++;
+ 						break;
+-- 
+2.20.1
+
